@@ -1,7 +1,5 @@
 from ollama import ChatResponse, chat
 
-from ollama import ChatResponse, chat
-
 
 def ollama_chat_automatic_function_calling(
     client_fn: chat, options: dict = None, **kwargs
@@ -27,10 +25,9 @@ def ollama_chat_automatic_function_calling(
     if model is None:
         raise ValueError("model must be specified")
 
-    messages = kwargs.get("messages", [])
     max_turns = kwargs.get("max_turns", 20)
-    tools = kwargs.get("tools", [])
     tool_map = kwargs.get("tool_map")
+    messages = list()
     last_response = None
 
     def _to_msg_dict(msg):
@@ -81,12 +78,14 @@ def ollama_chat_automatic_function_calling(
     if not callable(client_fn):
         raise ValueError("client_fn must be a callable")
 
-    reserved = {"messages", "max_turns", "model", "tools", "tool_map"}
-    chat_kwargs = {k: v for k, v in kwargs.items() if k not in reserved}
-
     for _ in range(max_turns):
         response = client_fn(
-            model=model, tools=tools, messages=messages, options=options, **chat_kwargs
+            model=model,
+            tools=tools,
+            messages=messages,
+            options=options,
+            think=think,
+            **chat_kwargs,
         )
         last_response = response
         assistant_msg = response.message
