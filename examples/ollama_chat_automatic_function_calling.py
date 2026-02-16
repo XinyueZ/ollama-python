@@ -159,10 +159,15 @@ def div(a: float, b: float) -> float:
 if __name__ == "__main__":
     from ollama import chat
 
-    response, messages = ollama_automatic_function_calling(
+    response, messages = ollama_chat_automatic_function_calling(
         chat,
         model="glm-5:cloud",
-        think="low",
         tools=[add, sub, mul, div],
         messages=[{"role": "user", "content": "这个数学题：4+7*9/6是多少?"}],
+        think="low",  # or true, false
+        options={
+            "temperature": 1,
+            "top_p": 1.0,
+            "top_k": 60,
+        },
     )
