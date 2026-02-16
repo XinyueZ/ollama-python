@@ -10,7 +10,7 @@ def ollama_automatic_function_calling(
     max_turns is reached.
 
     Args:
-        client_fn: Ollama chat client
+        client_fn: Ollama some client
         messages: List of message dicts for the conversation
         max_turns: Maximum number of chat iterations (default: 20)
         model: Model name to use (default: "glm-5:cloud")
