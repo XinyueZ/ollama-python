@@ -2,7 +2,10 @@ from ollama import ChatResponse, chat
 
 
 def ollama_chat_automatic_function_calling(
-    client_fn: chat, options: dict = None, **kwargs
+    client_fn: chat,
+    messages: list[dict],
+    options: dict = None,
+    **kwargs,
 ) -> tuple[ChatResponse, list[dict]]:
     """
     Automatically handles tool/function calls in a chat loop.
@@ -26,8 +29,8 @@ def ollama_chat_automatic_function_calling(
         raise ValueError("model must be specified")
 
     max_turns = kwargs.get("max_turns", 20)
+    tools = kwargs.get("tools")
     tool_map = kwargs.get("tool_map")
-    messages = list()
     last_response = None
 
     def _to_msg_dict(msg):
@@ -68,7 +71,7 @@ def ollama_chat_automatic_function_calling(
         wrapped = getattr(fn, "__wrapped__", None)
         return wrapped if callable(wrapped) else fn
 
-    if tool_map is None:
+    if tool_map is None and tools:
         tool_map = {}
         for t in tools:
             name = _infer_tool_name(t)
@@ -78,13 +81,15 @@ def ollama_chat_automatic_function_calling(
     if not callable(client_fn):
         raise ValueError("client_fn must be a callable")
 
+    reserved = {"model", "tools", "messages", "options", "max_turns", "tool_map"}
+    chat_kwargs = {k: v for k, v in kwargs.items() if k not in reserved}
+
     for _ in range(max_turns):
         response = client_fn(
             model=model,
             tools=tools,
             messages=messages,
             options=options,
-            think=think,
             **chat_kwargs,
         )
         last_response = response
@@ -97,7 +102,7 @@ def ollama_chat_automatic_function_calling(
 
         for tool_call in tool_calls:
             tool_name, tool_args = _extract_tool_call_parts(tool_call)
-            tool_fn = tool_map.get(tool_name)
+            tool_fn = tool_map.get(tool_name) if tool_map else None
 
             if not callable(tool_fn):
                 messages.append(
