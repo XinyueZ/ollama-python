@@ -1,8 +1,10 @@
 from ollama import ChatResponse, chat
 
+from ollama import ChatResponse, chat
 
-def ollama_automatic_function_calling(
-    client_fn: chat, **kwargs
+
+def ollama_chat_automatic_function_calling(
+    client_fn: chat, options: dict = None, **kwargs
 ) -> tuple[ChatResponse, list[dict]]:
     """
     Automatically handles tool/function calls in a chat loop.
@@ -10,7 +12,7 @@ def ollama_automatic_function_calling(
     max_turns is reached.
 
     Args:
-        client_fn: Ollama some client
+        client_fn: Ollama chat client
         messages: List of message dicts for the conversation
         max_turns: Maximum number of chat iterations (default: 20)
         model: Model name to use (default: "glm-5:cloud")
@@ -83,7 +85,9 @@ def ollama_automatic_function_calling(
     chat_kwargs = {k: v for k, v in kwargs.items() if k not in reserved}
 
     for _ in range(max_turns):
-        response = client_fn(model=model, tools=tools, messages=messages, **chat_kwargs)
+        response = client_fn(
+            model=model, tools=tools, messages=messages, options=options, **chat_kwargs
+        )
         last_response = response
         assistant_msg = response.message
         messages.append(_to_msg_dict(assistant_msg))
