@@ -1,7 +1,7 @@
 from ollama import ChatResponse, chat
 
 
-def ollama_chat_automatic_function_calling(
+def ollama_automatic_function_calling(
     client_fn: chat,
     messages: list[dict],
     options: dict = None,
@@ -163,7 +163,7 @@ def div(a: float, b: float) -> float:
 if __name__ == "__main__":
     from ollama import chat
 
-    response, messages = ollama_chat_automatic_function_calling(
+    response, messages = ollama_automatic_function_calling(
         chat,
         model="glm-5:cloud",
         tools=[add, sub, mul, div],
